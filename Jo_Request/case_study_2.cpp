@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 #define MAX_LINE_LENGTH 1024 // Maximum length of a line to read
 
@@ -25,9 +26,11 @@ void printFile(Data datas[], int size);
 int compareData(const Data* a, const Data* b, int column, int ascending);
 int partition(Data* arr, int low, int high, int column, int ascending);
 void quickSort(Data* arr, int low, int high, int column, int ascending);
+int strCaseCmp(const char* str1, const char* str2);
 int getColumnIndex(const char* columnName);
 void sortBy(Data datas[], int size);
 void searchData(Data datas[], int size);
+void exportData(Data datas[], int size);
 
 int main() {
     int input; 
@@ -44,11 +47,11 @@ int main() {
     do{
         puts("What do you want to do?");
         
-        puts("\t1. Display Data");
-        puts("\t2. Search Data");
-        puts("\t3. Sort Data");
-        puts("\t4. Export Data");
-        puts("\t5. Exit");
+        puts("\tDisplay Data");
+        puts("\tSearch Data");
+        puts("\tSort Data");
+        puts("\tExport Data");
+        puts("\tExit");
         
         do{
             puts("");
@@ -76,7 +79,9 @@ int main() {
             case 3: 
                 sortBy(datas, size);
                 break;
-            case 4: puts("~~~ Thanks for Using 4 ~~~"); break;
+            case 4: 
+                exportData(datas, size);
+                break;
         }
     }while(input != 5);
     puts("~~~ Thanks for Using The App ~~~");
@@ -233,15 +238,26 @@ void quickSort(Data* arr, int low, int high, int column, int ascending) {
     }
 }
 
+int strCaseCmp(const char* str1, const char* str2) {
+    while (*str1 && *str2) {
+        if (tolower((unsigned char)*str1) != tolower((unsigned char)*str2)) {
+            return tolower((unsigned char)*str1) - tolower((unsigned char)*str2);
+        }
+        str1++;
+        str2++;
+    }
+    return tolower((unsigned char)*str1) - tolower((unsigned char)*str2);
+}
+
 int getColumnIndex(const char* columnName) {
-    if (strcmp(columnName, "Location") == 0) return 1;
-    if (strcmp(columnName, "City") == 0) return 2;
-    if (strcmp(columnName, "Price") == 0) return 3;
-    if (strcmp(columnName, "Rooms") == 0) return 4;
-    if (strcmp(columnName, "Bathroom") == 0) return 5;
-    if (strcmp(columnName, "Carpark") == 0) return 6;
-    if (strcmp(columnName, "Type") == 0) return 7;
-    if (strcmp(columnName, "Furnish") == 0) return 8;
+    if (strCaseCmp(columnName, "Location") == 0) return 1;
+    if (strCaseCmp(columnName, "City") == 0) return 2;
+    if (strCaseCmp(columnName, "Price") == 0) return 3;
+    if (strCaseCmp(columnName, "Rooms") == 0) return 4;
+    if (strCaseCmp(columnName, "Bathroom") == 0) return 5;
+    if (strCaseCmp(columnName, "Carpark") == 0) return 6;
+    if (strCaseCmp(columnName, "Type") == 0) return 7;
+    if (strCaseCmp(columnName, "Furnish") == 0) return 8;
     return -1; // Invalid column
 }
 
@@ -278,7 +294,7 @@ void searchData(Data datas[], int size) {
     char query[144];
 
     // Prompt user for column name
-    printf("Choose column:  (e.g., 'Location', 'Price', etc.): ");
+    printf("Choose column: (e.g., 'Location', 'Price', etc.): ");
     scanf("%s", columnName);
 
     // Get column index
@@ -289,7 +305,7 @@ void searchData(Data datas[], int size) {
     }
 
     // Prompt user for query value
-    printf("What data do you want to find?  ");
+    printf("What data do you want to find? ");
     scanf("%s", query);
 
     int found = 0; // Flag to track if any data is found
@@ -297,19 +313,23 @@ void searchData(Data datas[], int size) {
     for (int i = 0; i < size; i++) {
         int match = 0;
         switch (column) {
-            case 1: match = (strcmp(datas[i].location, query) == 0); break;
-            case 2: match = (strcmp(datas[i].city, query) == 0); break;
+            case 1: match = (strCaseCmp(datas[i].location, query) == 0); break;
+            case 2: match = (strCaseCmp(datas[i].city, query) == 0); break;
             case 3: match = (atoll(query) == datas[i].price); break;
             case 4: match = (atoi(query) == datas[i].rooms); break;
             case 5: match = (atoi(query) == datas[i].bathroom); break;
             case 6: match = (atoi(query) == datas[i].carpark); break;
-            case 7: match = (strcmp(datas[i].type, query) == 0); break;
-            case 8: match = (strcmp(datas[i].furnish, query) == 0); break;
+            case 7: match = (strCaseCmp(datas[i].type, query) == 0); break;
+            case 8: match = (strCaseCmp(datas[i].furnish, query) == 0); break;
         }
 
         if (match) {
+            if (!found) {
+                // Print the header only once
+                printf("Location\t\tCity\t\t\tPrice\tRooms\tBathroom\tCarpark\tType\t\tFurnish\n");
+            }
             found = 1;
-            printf("%s, %s, %lld, %d, %d, %d, %s, %s\n",
+            printf("%-15s %-15s %-10lld %-6d %-9d %-8d %-10s %-10s\n",
                    datas[i].location, datas[i].city, datas[i].price,
                    datas[i].rooms, datas[i].bathroom, datas[i].carpark,
                    datas[i].type, datas[i].furnish);
